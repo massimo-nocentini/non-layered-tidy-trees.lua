@@ -5,7 +5,7 @@ local tidy = require 'non-layered-tidy-trees'
 function test_simple ()
 
     local tree = tidy.trees {
-
+        addspacers = true,
         [1] = {w = 70, h = 30, c = {2, 3, 4, 8}},
         [2] = {w = 10, h = 50, c = {}},
         [3] = {w = 20, h = 30, c = {}},
