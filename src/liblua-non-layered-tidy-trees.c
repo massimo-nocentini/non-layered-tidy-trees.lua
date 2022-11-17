@@ -29,6 +29,10 @@ static int l_mktree(lua_State *L) {
 	t->id = id;
 	t->w = w;
 	t->h = h;
+	t->tl = NULL;
+	t->tr = NULL;
+	t->el = NULL;
+	t->er = NULL;
 	t->cs = cs;
 	t->c = cs == 0 ? NULL : (tree_t **) malloc (sizeof(tree_t *) * cs);
 
@@ -44,7 +48,7 @@ static int l_atputchild(lua_State *L) {
 	lua_Integer i = lua_tointeger(L, -2);
 	tree_t *child = (tree_t *) lua_touserdata (L, -1);
 	
-	parent->c[i] = child;
+	parent->c[i - 1] = child;
 
 	return 0;
 }
@@ -52,13 +56,74 @@ static int l_atputchild(lua_State *L) {
 static int l_dbind(lua_State *L) {
 
 	tree_t *t = (tree_t *) lua_touserdata (L, -1);
-	
-	lua_pushnumber (L, t->x);
-	lua_pushnumber (L, t->y);
-	lua_pushnumber (L, t->prelim);
-	lua_pushinteger (L, t->id);
 
-	return 4;
+	lua_newtable (L);
+	
+	lua_pushinteger (L, t->id);
+	lua_setfield (L, -2, "id");
+
+	lua_pushnumber (L, t->w);
+	lua_setfield (L, -2, "w");
+
+	lua_pushnumber (L, t->h);
+	lua_setfield (L, -2, "h");
+
+	lua_pushnumber (L, t->x);
+	lua_setfield (L, -2, "x");
+
+	lua_pushnumber (L, t->y);
+	lua_setfield (L, -2, "y");
+
+	lua_pushnumber (L, t->prelim);
+	lua_setfield (L, -2, "prelim");
+
+	lua_pushnumber (L, t->mod);
+	lua_setfield (L, -2, "mod");
+
+	lua_pushnumber (L, t->shift);
+	lua_setfield (L, -2, "shift");
+
+	lua_pushnumber (L, t->change);
+	lua_setfield (L, -2, "change");
+	
+	lua_pushnumber (L, t->msel);
+	lua_setfield (L, -2, "msel");
+
+	lua_pushnumber (L, t->mser);
+	lua_setfield (L, -2, "mser");
+
+	lua_pushinteger (L, t->cs);
+	lua_setfield (L, -2, "cs");
+
+	if (t->tl != NULL) {
+		lua_pushinteger (L, t->tl->id);
+		lua_setfield (L, -2, "tl");
+	}
+
+	if (t->tr != NULL) {
+		lua_pushinteger (L, t->tr->id);
+		lua_setfield (L, -2, "tr");
+	}
+
+	if (t->el != NULL) {
+		lua_pushinteger (L, t->el->id);
+		lua_setfield (L, -2, "el");
+	}
+
+	if (t->er != NULL) {
+		lua_pushinteger (L, t->er->id);
+		lua_setfield (L, -2, "er");
+	}
+
+	lua_newtable (L);
+	for (int i = 0; i < t->cs; i++) {
+
+		lua_pushinteger(L, t->c[i]->id);
+		lua_seti(L, -2, i + 1);
+	}
+	lua_setfield (L, -2, "c");
+
+	return 1;
 }
 
 static void treefree (tree_t *t) {
