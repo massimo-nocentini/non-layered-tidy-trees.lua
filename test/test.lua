@@ -59,7 +59,7 @@ function test_simple ()
 
     }
 
-    local root = tree[0]
+    local root = tree[1]
 
     tidy.layout (root)
 
