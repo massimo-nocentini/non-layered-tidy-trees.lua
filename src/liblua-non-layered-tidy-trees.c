@@ -19,9 +19,10 @@ typedef struct userdata_s {
 
 static int l_mktree(lua_State *L) {
 
-	lua_Integer id = lua_tointeger (L, -5);
-	lua_Number w = lua_tonumber(L, -4);
-	lua_Number h = lua_tonumber(L, -3);
+	lua_Integer id = lua_tointeger (L, -6);
+	lua_Number w = lua_tonumber(L, -5);
+	lua_Number h = lua_tonumber(L, -4);
+	lua_Number x = lua_tonumber(L, -3);
 	lua_Number y = lua_tonumber(L, -2);
 	lua_Integer cs = lua_tointeger(L, -1);
 
@@ -30,6 +31,7 @@ static int l_mktree(lua_State *L) {
 	t->id = id;
 	t->w = w;
 	t->h = h;
+	t->x = x;
 	t->y = y;
 	t->prelim = 0.0;
 	t->mod = 0.0;
@@ -174,9 +176,10 @@ static int l_updatewh(lua_State *L) {
 
 static int l_layout(lua_State *L) {
 
-	tree_t *root = (tree_t *) lua_touserdata(L, -1);
+	tree_t *root = (tree_t *) lua_touserdata(L, -2);
+	int vertically = lua_toboolean (L, -1);
 
-	layout (root, NULL, NULL, NULL);
+	layout (root, vertically, NULL, NULL, NULL);
 
 	return 0;
 }

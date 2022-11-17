@@ -21,7 +21,7 @@ function nonlayeredtidytrees.trees (rel)
     end
 
     for k, each in pairs (newrel) do 
-        tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, each.y or 0.0, #each.c)
+        tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, each.x or 0, each.y or 0.0, #each.c)
     end
 
     for k, parent in pairs (newrel) do
