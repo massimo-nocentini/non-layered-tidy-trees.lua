@@ -9,7 +9,7 @@ function nonlayeredtidytrees.trees (rel)
 
     local tree = {}
 
-    for k, each in pairs (rel) do tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, #each.c) end
+    for k, each in pairs (rel) do tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, each.y or 0.0, #each.c) end
 
     for k, parent in pairs (rel) do
 

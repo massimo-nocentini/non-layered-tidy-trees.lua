@@ -2,7 +2,7 @@
 local lu = require 'luaunit'
 local tidy = require 'non-layered-tidy-trees'
 
-function test_simple_input ()
+function est_simple_input ()
 
     local tree = tidy.trees {
 
@@ -41,7 +41,6 @@ function test_simple_input ()
 
 
 end
-
 
 function test_simple ()
 

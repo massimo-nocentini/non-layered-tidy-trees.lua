@@ -19,9 +19,10 @@ typedef struct userdata_s {
 
 static int l_mktree(lua_State *L) {
 
-	lua_Integer id = lua_tointeger (L, -4);
-	lua_Number w = lua_tonumber(L, -3);
-	lua_Number h = lua_tonumber(L, -2);
+	lua_Integer id = lua_tointeger (L, -5);
+	lua_Number w = lua_tonumber(L, -4);
+	lua_Number h = lua_tonumber(L, -3);
+	lua_Number y = lua_tonumber(L, -2);
 	lua_Integer cs = lua_tointeger(L, -1);
 
 	tree_t *t = (tree_t *) malloc (sizeof(tree_t));
@@ -29,12 +30,20 @@ static int l_mktree(lua_State *L) {
 	t->id = id;
 	t->w = w;
 	t->h = h;
+	t->y = y;
+	t->prelim = 0.0;
+	t->mod = 0.0;
+	t->shift = 0.0;
+	t->change = 0.0;
+	t->msel = 0.0;
+	t->mser = 0.0;
 	t->tl = NULL;
 	t->tr = NULL;
 	t->el = NULL;
 	t->er = NULL;
 	t->cs = cs;
 	t->c = cs == 0 ? NULL : (tree_t **) malloc (sizeof(tree_t *) * cs);
+	t->p = NULL;
 
 	lua_pushlightuserdata (L, t);
 
@@ -49,6 +58,7 @@ static int l_atputchild(lua_State *L) {
 	tree_t *child = (tree_t *) lua_touserdata (L, -1);
 	
 	parent->c[i - 1] = child;
+	child->p = parent;
 
 	return 0;
 }
@@ -132,7 +142,6 @@ static void treefree (tree_t *t) {
 
 	free (t->c);
 	free (t);
-
 }
 
 static int l_free(lua_State *L) {
