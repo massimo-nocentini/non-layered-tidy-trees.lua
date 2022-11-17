@@ -125,6 +125,12 @@ static int l_dbind(lua_State *L) {
 		lua_setfield (L, -2, "er");
 	}
 
+	if (t->p != NULL) {
+		lua_pushinteger (L, t->p->id);
+		lua_setfield (L, -2, "p");
+	}
+
+
 	lua_newtable (L);
 	for (int i = 0; i < t->cs; i++) {
 

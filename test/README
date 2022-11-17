@@ -34,6 +34,7 @@ actual:
         mod=15.0,
         msel=15.0,
         mser=0.0,
+        p=0,
         prelim=-15.0,
         shift=0.0,
         tl=4,
@@ -52,6 +53,7 @@ actual:
         mod=0.0,
         msel=10.0,
         mser=0.0,
+        p=0,
         prelim=10.0,
         shift=0.0,
         tr=1,
@@ -70,6 +72,7 @@ actual:
         mod=15.0,
         msel=15.0,
         mser=15.0,
+        p=0,
         prelim=15.0,
         shift=0.0,
         w=30.0,
@@ -87,6 +90,7 @@ actual:
         mod=0.0,
         msel=0.0,
         mser=0.0,
+        p=3,
         prelim=10.0,
         shift=0.0,
         w=20.0,
@@ -104,6 +108,7 @@ actual:
         mod=0.0,
         msel=0.0,
         mser=0.0,
+        p=4,
         prelim=0.0,
         shift=0.0,
         w=40.0,
@@ -121,6 +126,7 @@ actual:
         mod=0.0,
         msel=30.0,
         mser=0.0,
+        p=3,
         prelim=30.0,
         shift=0.0,
         tr=4,
@@ -139,6 +145,7 @@ actual:
         mod=60.0,
         msel=60.0,
         mser=15.0,
+        p=0,
         prelim=5.0,
         shift=0.0,
         w=30.0,
@@ -156,6 +163,7 @@ actual:
         mod=-45.0,
         msel=0.0,
         mser=0.0,
+        p=7,
         prelim=45.0,
         shift=0.0,
         tr=4,
@@ -174,6 +182,7 @@ actual:
         mod=0.0,
         msel=30.0,
         mser=0.0,
+        p=7,
         prelim=30.0,
         shift=0.0,
         tr=8,
@@ -185,4 +194,4 @@ actual:
 stack traceback:
 	test.lua:79: in function 'test_simple'
 
-Ran 1 tests in 0.093 seconds, 0 successes, 1 failure
+Ran 1 tests in 0.102 seconds, 0 successes, 1 failure
