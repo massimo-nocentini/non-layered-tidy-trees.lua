@@ -22,10 +22,10 @@ static int l_mktree(lua_State *L) {
 	lua_Integer id = lua_tointeger (L, -6);
 	lua_Number w = lua_tonumber(L, -5);
 	lua_Number h = lua_tonumber(L, -4);
-	lua_Number x = lua_tonumber(L, -3);
-	lua_Number y = lua_tonumber(L, -2);
-	lua_Integer cs = lua_tointeger(L, -1);
-
+	lua_Integer cs = lua_tointeger(L, -3);
+	lua_Number x = lua_tonumber(L, -2);
+	lua_Number y = lua_tonumber(L, -1);
+	
 	tree_t *t = (tree_t *) malloc (sizeof(tree_t));
 
 	t->id = id;

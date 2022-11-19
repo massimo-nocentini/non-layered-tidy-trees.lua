@@ -9,13 +9,15 @@ function nonlayeredtidytrees.trees (rel)
 
     local tree = {}
 
-    if rel.addspacers then
+    if false and rel.addspacers then
 
         rel.addspacers = nil    -- remove from the input table.
 
         local newrel = {}
 
         for k, each in pairs (rel) do
+
+            if k <= 0 then error 'Use positive keys please.' end
 
             local newc = {}
             for i, c in ipairs (each.c) do newc[i] = -c end
@@ -30,7 +32,7 @@ function nonlayeredtidytrees.trees (rel)
     rel.addspacers = nil    -- be sure that the key `addspacers` is removed even if it is `false`.
 
     for k, each in pairs (rel) do 
-        tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, each.x or 0, each.y or 0.0, #each.c)
+        tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, #each.c, each.x or 0, each.y or 0.0)
     end
 
     for k, parent in pairs (rel) do
