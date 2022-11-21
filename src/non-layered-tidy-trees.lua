@@ -47,4 +47,27 @@ function nonlayeredtidytrees.trees (rel)
     return tree, itree
 end
 
+function nonlayeredtidytrees.dbindrec (itree)
+    
+    local destructured = {}
+
+    for t, k in pairs (itree) do 
+        destructured[k] = nonlayeredtidytrees.dbind (t)
+        destructured[k].id = k
+    end
+
+    for k, tbl in pairs (destructured) do
+        local c = {  }
+        for i, ud in pairs (tbl.c) do
+            c[i] = destructured[itree[ud]]
+        end
+        tbl.c = c
+
+        --if tbl.p then tbl.p = destructured[itree[tbl.p]] end
+        
+    end
+    
+    return destructured
+end
+
 return nonlayeredtidytrees

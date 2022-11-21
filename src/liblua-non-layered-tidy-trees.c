@@ -113,9 +113,11 @@ static int l_dbind(lua_State *L) {
 	lua_pushlightuserdata (L, t->er);
 	lua_setfield (L, -2, "er");
 	
-	lua_pushlightuserdata (L, t->p);
-	lua_setfield (L, -2, "p");
-
+	if (t->p != NULL) {
+		lua_pushlightuserdata (L, t->p);
+		lua_setfield (L, -2, "p");
+	}
+	
 	lua_newtable (L);
 	for (int i = 0; i < t->cs; i++) {
 		lua_pushlightuserdata(L, t->c[i]);
