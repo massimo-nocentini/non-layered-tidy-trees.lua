@@ -117,7 +117,7 @@ static int l_dbind(lua_State *L) {
 		lua_pushlightuserdata (L, t->p);
 		lua_setfield (L, -2, "p");
 	}
-	
+
 	lua_newtable (L);
 	for (int i = 0; i < t->cs; i++) {
 		lua_pushlightuserdata(L, t->c[i]);
@@ -126,6 +126,18 @@ static int l_dbind(lua_State *L) {
 	lua_setfield (L, -2, "c");
 
 	return 1;
+}
+
+static int l_dbindwhxy(lua_State *L) {
+
+	tree_t *t = (tree_t *) lua_touserdata (L, -1);
+
+	lua_pushnumber (L, t->w);
+	lua_pushnumber (L, t->h);
+	lua_pushnumber (L, t->x);
+	lua_pushnumber (L, t->y);
+	
+	return 4;
 }
 
 static void treefree (tree_t *t) {
@@ -186,6 +198,7 @@ static const struct luaL_Reg tidytree_reg [] = {
 	{"updatewh", l_updatewh},
 	{"atputchild", l_atputchild},
 	{"dbind", l_dbind},
+	{"dbindwhxy", l_dbindwhxy},
 	{NULL, NULL} /* sentinel */
 };
  

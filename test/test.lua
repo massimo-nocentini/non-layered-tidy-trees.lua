@@ -42,4 +42,28 @@ function test_simple ()
 
 end
 
+
+function test_big ()
+
+	loadfile ('big-tree.lua') ()
+
+	local tree, itree = tidy.trees (spec)
+
+    local r = tree.foAcmssi2tj
+
+    tidy.layout {
+		root = r,
+		vertically = false,
+		centeredxy = true,
+	 }
+
+    local result = tidy.dbindrec (itree)
+
+    tidy.free(r);
+
+
+	--lu.assertEquals(result, {})
+
+end
+
 os.exit( lu.LuaUnit.run() )

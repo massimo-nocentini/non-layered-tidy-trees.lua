@@ -47,6 +47,18 @@ function nonlayeredtidytrees.trees (rel)
     return tree, itree
 end
 
+function nonlayeredtidytrees.positions (itree)
+    
+    local destructured = {}
+
+    for t, k in pairs (itree) do 
+        local w, h, x, y = nonlayeredtidytrees.dbindwhxy (t)
+        destructured[k] = {w=w, h=h, x=x, y=y}
+    end
+    
+    return destructured
+end
+
 function nonlayeredtidytrees.dbindrec (itree)
     
     local destructured = {}
