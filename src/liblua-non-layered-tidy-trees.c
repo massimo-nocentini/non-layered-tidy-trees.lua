@@ -19,7 +19,6 @@ typedef struct userdata_s {
 
 static int l_mktree(lua_State *L) {
 
-	lua_Integer id = lua_tointeger (L, -6);
 	lua_Number w = lua_tonumber(L, -5);
 	lua_Number h = lua_tonumber(L, -4);
 	lua_Integer cs = lua_tointeger(L, -3);
@@ -28,7 +27,6 @@ static int l_mktree(lua_State *L) {
 	
 	tree_t *t = (tree_t *) malloc (sizeof(tree_t));
 
-	t->id = id;
 	t->w = w;
 	t->h = h;
 	t->x = x;
@@ -50,7 +48,6 @@ static int l_mktree(lua_State *L) {
 	lua_pushlightuserdata (L, t);
 
 	return 1;
-
 }
 
 static int l_atputchild(lua_State *L) {
@@ -71,9 +68,6 @@ static int l_dbind(lua_State *L) {
 
 	lua_newtable (L);
 	
-	lua_pushinteger (L, t->id);
-	lua_setfield (L, -2, "id");
-
 	lua_pushnumber (L, t->w);
 	lua_setfield (L, -2, "w");
 
@@ -107,36 +101,24 @@ static int l_dbind(lua_State *L) {
 	lua_pushinteger (L, t->cs);
 	lua_setfield (L, -2, "cs");
 
-	if (t->tl != NULL) {
-		lua_pushinteger (L, t->tl->id);
-		lua_setfield (L, -2, "tl");
-	}
+	lua_pushlightuserdata (L, t->tl);
+	lua_setfield (L, -2, "tl");
 
-	if (t->tr != NULL) {
-		lua_pushinteger (L, t->tr->id);
-		lua_setfield (L, -2, "tr");
-	}
-
-	if (t->el != NULL) {
-		lua_pushinteger (L, t->el->id);
-		lua_setfield (L, -2, "el");
-	}
-
-	if (t->er != NULL) {
-		lua_pushinteger (L, t->er->id);
-		lua_setfield (L, -2, "er");
-	}
-
-	if (t->p != NULL) {
-		lua_pushinteger (L, t->p->id);
-		lua_setfield (L, -2, "p");
-	}
-
+	lua_pushlightuserdata (L, t->tr);
+	lua_setfield (L, -2, "tr");
+	
+	lua_pushlightuserdata (L, t->el);
+	lua_setfield (L, -2, "el");
+	
+	lua_pushlightuserdata (L, t->er);
+	lua_setfield (L, -2, "er");
+	
+	lua_pushlightuserdata (L, t->p);
+	lua_setfield (L, -2, "p");
 
 	lua_newtable (L);
 	for (int i = 0; i < t->cs; i++) {
-
-		lua_pushinteger(L, t->c[i]->id);
+		lua_pushlightuserdata(L, t->c[i]);
 		lua_seti(L, -2, i + 1);
 	}
 	lua_setfield (L, -2, "c");
@@ -176,10 +158,21 @@ static int l_updatewh(lua_State *L) {
 
 static int l_layout(lua_State *L) {
 
-	tree_t *root = (tree_t *) lua_touserdata(L, -2);
-	int vertically = lua_toboolean (L, -1);
+	int type;
 
-	layout (root, vertically, NULL, NULL, NULL);
+	type = lua_getfield (L, -1, "root");
+	tree_t *root = (tree_t *) lua_touserdata(L, -1);
+	lua_pop(L, 1);
+
+	type = lua_getfield (L, -1, "vertically");
+	int vertically = lua_toboolean (L, -1);
+	lua_pop(L, 1);
+
+	type = lua_getfield (L, -1, "centeredxy");
+	int centeredxy = lua_toboolean (L, -1);
+	lua_pop(L, 1);
+
+	layout (root, vertically, centeredxy, NULL, NULL, NULL);
 
 	return 0;
 }

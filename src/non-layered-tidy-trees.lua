@@ -7,7 +7,7 @@ setmetatable (nonlayeredtidytrees, {__index = libluanonlayeredtidytrees})
 
 function nonlayeredtidytrees.trees (rel)
 
-    local tree = {}
+    local tree, itree = {}, {}
 
     if false and rel.addspacers then
 
@@ -32,7 +32,8 @@ function nonlayeredtidytrees.trees (rel)
     rel.addspacers = nil    -- be sure that the key `addspacers` is removed even if it is `false`.
 
     for k, each in pairs (rel) do 
-        tree[k] = libluanonlayeredtidytrees.mktree (k, each.w, each.h, #each.c, each.x or 0, each.y or 0.0)
+        tree[k] = libluanonlayeredtidytrees.mktree (each.w, each.h, #each.c, each.x or 0.0, each.y or 0.0)
+        itree[tree[k]] = k
     end
 
     for k, parent in pairs (rel) do
@@ -43,7 +44,7 @@ function nonlayeredtidytrees.trees (rel)
         end
     end
 
-    return tree
+    return tree, itree
 end
 
 return nonlayeredtidytrees
