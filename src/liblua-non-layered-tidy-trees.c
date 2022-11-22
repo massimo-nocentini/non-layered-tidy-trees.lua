@@ -19,6 +19,7 @@ typedef struct userdata_s {
 
 static int l_mktree(lua_State *L) {
 
+	lua_Integer idx = lua_tointeger(L, -6);
 	lua_Number w = lua_tonumber(L, -5);
 	lua_Number h = lua_tonumber(L, -4);
 	lua_Integer cs = lua_tointeger(L, -3);
@@ -27,6 +28,7 @@ static int l_mktree(lua_State *L) {
 	
 	tree_t *t = (tree_t *) malloc (sizeof(tree_t));
 
+	t->idx = idx;
 	t->w = w;
 	t->h = h;
 	t->x = x;
@@ -67,6 +69,9 @@ static int l_dbind(lua_State *L) {
 	tree_t *t = (tree_t *) lua_touserdata (L, -1);
 
 	lua_newtable (L);
+
+	lua_pushinteger (L, t->idx);
+	lua_setfield (L, -2, "idx");
 	
 	lua_pushnumber (L, t->w);
 	lua_setfield (L, -2, "w");
@@ -157,7 +162,6 @@ static int l_free(lua_State *L) {
 	return 0;
 }
 
-
 static int l_updatewh(lua_State *L) {
 
 	tree_t *t = (tree_t *) lua_touserdata (L, -3);
@@ -166,6 +170,28 @@ static int l_updatewh(lua_State *L) {
 	
 	t->w = w;
 	t->h = h;
+
+	return 0;
+}
+
+static void flatcoordinatesinto (tree_t *t, double *array) {
+
+	for (int i = 0; i < t->cs; i++) flatcoordinatesinto (t->c[i], array);
+
+	int idx = (t->idx - 1) * 4;
+
+	array[idx] = t->x;
+	array[idx + 1] = t->y;
+	array[idx + 2] = t->w;
+	array[idx + 3] = t->h;
+}
+
+static int l_flatcoordinatesinto(lua_State *L) {
+
+	tree_t *t = (tree_t *) lua_touserdata(L, -2);
+	double *a = (double *) lua_touserdata(L, -1);
+
+	flatcoordinatesinto (t, a);
 
 	return 0;
 }
@@ -194,6 +220,7 @@ static int l_layout(lua_State *L) {
 static const struct luaL_Reg tidytree_reg [] = {
 	{"layout", l_layout},
 	{"mktree", l_mktree},
+	{"flatcoordinatesinto", l_flatcoordinatesinto},
 	{"free", l_free},
 	{"updatewh", l_updatewh},
 	{"atputchild", l_atputchild},

@@ -31,9 +31,13 @@ function nonlayeredtidytrees.trees (rel)
 
     rel.addspacers = nil    -- be sure that the key `addspacers` is removed even if it is `false`.
 
-    for k, each in pairs (rel) do 
-        tree[k] = libluanonlayeredtidytrees.mktree (each.w, each.h, #each.c, each.x or 0.0, each.y or 0.0)
-        itree[tree[k]] = k
+    do
+        local idx = 0
+        for k, each in pairs (rel) do 
+            tree[k] = libluanonlayeredtidytrees.mktree (each.idx or idx, each.w, each.h, #each.c, each.x or 0.0, each.y or 0.0)
+            itree[tree[k]] = k
+            idx = idx + 1
+        end
     end
 
     for k, parent in pairs (rel) do
