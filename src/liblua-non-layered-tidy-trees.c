@@ -106,18 +106,26 @@ static int l_dbind(lua_State *L) {
 	lua_pushinteger (L, t->cs);
 	lua_setfield (L, -2, "cs");
 
-	lua_pushlightuserdata (L, t->tl);
-	lua_setfield (L, -2, "tl");
+	if (t->tl != NULL) {
+		lua_pushlightuserdata (L, t->tl);
+		lua_setfield (L, -2, "tl");
+	}
+	
+	if (t->tr != NULL) {
+		lua_pushlightuserdata (L, t->tr);
+		lua_setfield (L, -2, "tr");
+	}
 
-	lua_pushlightuserdata (L, t->tr);
-	lua_setfield (L, -2, "tr");
-	
-	lua_pushlightuserdata (L, t->el);
-	lua_setfield (L, -2, "el");
-	
-	lua_pushlightuserdata (L, t->er);
-	lua_setfield (L, -2, "er");
-	
+	if (t->el != NULL) {
+		lua_pushlightuserdata (L, t->el);
+		lua_setfield (L, -2, "el");
+	}
+
+	if (t->er != NULL) {
+		lua_pushlightuserdata (L, t->er);
+		lua_setfield (L, -2, "er");
+	}
+
 	if (t->p != NULL) {
 		lua_pushlightuserdata (L, t->p);
 		lua_setfield (L, -2, "p");
@@ -145,9 +153,9 @@ static int l_dbindwhxy(lua_State *L) {
 	return 4;
 }
 
-static void treefree (tree_t *t) {
+static void free_tree (tree_t *t) {
 
-	for (int i = 0; i < t->cs; i++) treefree (t->c[i]);
+	for (int i = 0; i < t->cs; i++) free_tree (t->c[i]);
 
 	free (t->c);
 	free (t);
@@ -157,7 +165,7 @@ static int l_free(lua_State *L) {
 
 	tree_t *t = (tree_t *) lua_touserdata (L, -1);
 	
-	treefree (t);
+	free_tree (t);
 
 	return 0;
 }
@@ -198,17 +206,15 @@ static int l_flatcoordinatesinto(lua_State *L) {
 
 static int l_layout(lua_State *L) {
 
-	int type;
-
-	type = lua_getfield (L, -1, "root");
+	lua_getfield (L, -1, "root");
 	tree_t *root = (tree_t *) lua_touserdata(L, -1);
 	lua_pop(L, 1);
 
-	type = lua_getfield (L, -1, "vertically");
+	lua_getfield (L, -1, "vertically");
 	int vertically = lua_toboolean (L, -1);
 	lua_pop(L, 1);
 
-	type = lua_getfield (L, -1, "centeredxy");
+	lua_getfield (L, -1, "centeredxy");
 	int centeredxy = lua_toboolean (L, -1);
 	lua_pop(L, 1);
 
