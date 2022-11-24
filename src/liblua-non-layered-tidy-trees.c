@@ -3,6 +3,13 @@
 	This is a glue c file for importing delta client c functions into Lua workflow.
 */
 
+
+#ifdef _WIN32
+	#define EXPORT __declspec(dllexport)
+#else
+	#define EXPORT __attribute__((visibility("default")))
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -235,7 +242,9 @@ static const struct luaL_Reg tidytree_reg [] = {
 	{NULL, NULL} /* sentinel */
 };
  
-int luaopen_libluanonlayeredtidytrees (lua_State *L) {
+EXPORT int luaopen_libluanonlayeredtidytrees (lua_State *L) {
 	luaL_newlib(L, tidytree_reg);
 	return 1;
 }
+
+int main () {}
