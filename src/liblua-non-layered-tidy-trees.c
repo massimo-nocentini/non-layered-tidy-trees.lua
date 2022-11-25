@@ -211,6 +211,10 @@ static int l_flatcoordinatesinto(lua_State *L) {
 	return 0;
 }
 
+static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
+	printf("(%d, %d): %lf\n", sr->idx, cl->idx, dist);
+}
+
 static int l_layout(lua_State *L) {
 
 	lua_getfield (L, -1, "root");
@@ -225,7 +229,7 @@ static int l_layout(lua_State *L) {
 	int centeredxy = lua_toboolean (L, -1);
 	lua_pop(L, 1);
 
-	layout (root, vertically, centeredxy, NULL, NULL, NULL);
+	layout (root, vertically, centeredxy, NULL, NULL, NULL, pairscb);
 
 	return 0;
 }
