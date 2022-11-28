@@ -212,7 +212,8 @@ static int l_flatcoordinatesinto(lua_State *L) {
 }
 
 static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
-	printf("(%d, %d): %lf\n", sr->idx, cl->idx, dist);
+	printf("(%d, %d): %lf, %lf\n", sr->idx, cl->idx, dist, 
+		cl->prelim + cl->mod - (sr->prelim + sr->mod) );
 }
 
 static int l_layout(lua_State *L) {
