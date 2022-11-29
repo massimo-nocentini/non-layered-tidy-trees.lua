@@ -21,7 +21,7 @@
 
 typedef struct userdata_s {
     lua_State *L;
-    lua_Integer table_absidx;
+    int contourpairscb_absidx;
 } userdata_t;
 
 static int l_mktree(lua_State *L) {
@@ -212,11 +212,39 @@ static int l_flatcoordinatesinto(lua_State *L) {
 }
 
 static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
-	printf("(%d, %d): %lf, %lf\n", sr->idx, cl->idx, dist, 
-		cl->prelim + cl->mod - (sr->prelim + sr->mod) );
+	userdata_t *ud = (userdata_t *) userdata;
+
+	if (ud->contourpairscb_absidx != -1 ){
+
+		lua_State *L = ud->L;
+
+		lua_pushvalue (L, ud->contourpairscb_absidx);
+		lua_pushlightuserdata (L, sr);
+		lua_pushlightuserdata (L, cl);
+		lua_pushnumber (L, dist);
+
+		lua_call (L, 3, 0);
+	}
+
+	printf("(%d (el: %d, er: %d, tl: %d, tr: %d), %d (el: %d, er: %d, tl: %d, tr: %d)): %lf, %lf\n", 
+			sr->idx, 
+			sr->el ? sr->el->idx: -1, sr->er ? sr->er->idx: -1,  
+			sr->tl ? sr->tl->idx: -1, sr->tr ? sr->tr->idx: -1, 
+			
+			
+			cl->idx,  
+			cl->el ? cl->el->idx: -1, cl->er ? cl->er->idx: -1,  
+			cl->tl ? cl->tl->idx: -1, cl->tr ? cl->tr->idx: -1, 
+			
+			dist, cl->prelim + cl->mod - (sr->prelim + sr->mod) );
 }
 
 static int l_layout(lua_State *L) {
+
+	userdata_t ud;
+
+	ud.L = L;
+	ud.contourpairscb_absidx = -1;
 
 	lua_getfield (L, -1, "root");
 	tree_t *root = (tree_t *) lua_touserdata(L, -1);
@@ -230,7 +258,14 @@ static int l_layout(lua_State *L) {
 	int centeredxy = lua_toboolean (L, -1);
 	lua_pop(L, 1);
 
-	layout (root, vertically, centeredxy, NULL, NULL, NULL, pairscb);
+	lua_getfield (L, -1, "contourpairscb");
+	if (lua_isfunction (L, -1) == 1) {
+		ud.contourpairscb_absidx = lua_absindex (L, -1);
+	}
+
+	layout (root, vertically, centeredxy, &ud, NULL, NULL, pairscb);
+
+	lua_pop(L, 1);	// contourpairscb
 
 	return 0;
 }
