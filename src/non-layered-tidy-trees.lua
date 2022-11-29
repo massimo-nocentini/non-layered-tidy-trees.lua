@@ -67,10 +67,7 @@ function nonlayeredtidytrees.dbindrec (itree)
     
     local destructured = {}
 
-    for t, k in pairs (itree) do 
-        destructured[k] = nonlayeredtidytrees.dbind (t)
-        destructured[k].id = k
-    end
+    for t, k in pairs (itree) do destructured[k] = nonlayeredtidytrees.dbind (t) end
 
     for k, tbl in pairs (destructured) do
         local c = {  }
@@ -79,7 +76,11 @@ function nonlayeredtidytrees.dbindrec (itree)
         end
         tbl.c = c
 
-        --if tbl.p then tbl.p = destructured[itree[tbl.p]] end
+        local p = tbl.p; if p then tbl.p = itree[p] end
+        local el = tbl.el; if el then tbl.el = itree[el] end
+        local er = tbl.er; if er then tbl.er = itree[er] end
+        local tl = tbl.tl; if tl then tbl.tl = itree[tl] end
+        local tr = tbl.tr; if tr then tbl.tr = itree[tr] end
         
     end
     

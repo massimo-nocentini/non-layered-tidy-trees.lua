@@ -52,6 +52,10 @@ static int l_mktree(lua_State *L) {
 	t->er = NULL;
 	t->cs = cs;
 	t->c = cs == 0 ? NULL : (tree_t **) malloc (sizeof(tree_t *) * cs);
+
+	/* Those two will be computed by the algorithm. */
+	t->level = -1;
+	t->childno = -1;
 	t->p = NULL;
 
 	lua_pushlightuserdata (L, t);
@@ -79,6 +83,12 @@ static int l_dbind(lua_State *L) {
 
 	lua_pushinteger (L, t->idx);
 	lua_setfield (L, -2, "idx");
+
+	lua_pushinteger (L, t->level + 1);
+	lua_setfield (L, -2, "level");
+
+	lua_pushinteger (L, t->childno + 1);
+	lua_setfield (L, -2, "childno");
 	
 	lua_pushnumber (L, t->w);
 	lua_setfield (L, -2, "w");
@@ -286,5 +296,3 @@ EXPORT int luaopen_libluanonlayeredtidytrees (lua_State *L) {
 	luaL_newlib(L, tidytree_reg);
 	return 1;
 }
-
-int main () {}
