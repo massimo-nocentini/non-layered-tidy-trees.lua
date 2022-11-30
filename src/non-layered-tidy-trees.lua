@@ -63,17 +63,19 @@ function nonlayeredtidytrees.positions (itree)
     return destructured
 end
 
-function nonlayeredtidytrees.dbindrec (itree)
+function nonlayeredtidytrees.dbindrec (itree, externalkey)
     
     local destructured = {}
 
-    for t, k in pairs (itree) do destructured[k] = nonlayeredtidytrees.dbind (t) end
+    for t, k in pairs (itree) do 
+        local tdest = nonlayeredtidytrees.dbind (t)
+        if externalkey then tdest[externalkey] = k end
+        destructured[k] = tdest
+    end
 
     for k, tbl in pairs (destructured) do
         local c = {  }
-        for i, ud in pairs (tbl.c) do
-            c[i] = destructured[itree[ud]]
-        end
+        for i, ud in pairs (tbl.c) do c[i] = itree[ud] end
         tbl.c = c
 
         local p = tbl.p; if p then tbl.p = itree[p] end

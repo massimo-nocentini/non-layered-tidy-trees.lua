@@ -249,6 +249,7 @@ static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
 			dist, cl->prelim + cl->mod - (sr->prelim + sr->mod) );
 }
 
+
 static int l_layout(lua_State *L) {
 
 	userdata_t ud;
@@ -280,6 +281,88 @@ static int l_layout(lua_State *L) {
 	return 0;
 }
 
+typedef struct fringemaxbottom_s {
+	double bottom;
+	int vertically;
+} fringemaxbottom_t;
+
+
+static double maxbottom (tree_t *t, tree_t *to, int vertically) {
+
+	double b;
+  	double m = bottom (t, vertically) - (t->w / 2.0);
+
+	for (int i = 0; i < t->cs; i++) {
+		tree_t *child = t->c[i];
+		if (child == to) return m;
+		b = maxbottom (child, to, vertically);
+		m = b > m ? b : m;
+	}
+
+	return m;
+}
+
+static void maxbottombetween (tree_t *from, tree_t *to, fringemaxbottom_t *ud) {
+
+  double b;
+  tree_t *p = from->p;
+
+  //assert (p != NULL);
+  if (p == NULL) return;
+
+  int found = 0;
+
+  for (int i = from->childno + 1; !found && i < p->cs; i++) {
+
+    tree_t *child = p->c[i];
+
+	if (child == to) {
+		found = 1;
+		break;
+	}
+
+	b = maxbottom (child, to, ud->vertically);
+	ud->bottom = b > ud->bottom ? b : ud->bottom;
+
+	// b = bottom (child->er, ud->vertically);
+	// ud->bottom = b > ud->bottom ? b : ud->bottom;
+
+  }
+
+  if (!found) maxbottombetween (p, to, ud);
+}
+
+static int l_maxbottombetween(lua_State *L) {
+
+	tree_t *from = (tree_t *) lua_touserdata (L, -3);
+	tree_t *to = (tree_t *) lua_touserdata (L, -2);
+	int vertically = lua_toboolean (L, -1);
+
+	fringemaxbottom_t ud;
+	ud.bottom = from->x - (from->w / 2.0);
+	ud.vertically = vertically;
+
+	maxbottombetween (from, to, &ud);
+	
+	lua_pushnumber (L, ud.bottom);
+
+	return 1;
+
+}
+
+static int l_bottom (lua_State *L) {
+
+	tree_t *t = (tree_t *) lua_touserdata (L, -2);
+	int vertically = lua_toboolean (L, -1);
+
+	double b = bottom (t, vertically);
+	
+	lua_pushnumber (L, b);
+
+	return 1;
+
+}
+
 static const struct luaL_Reg tidytree_reg [] = {
 	{"layout", l_layout},
 	{"mktree", l_mktree},
@@ -288,7 +371,9 @@ static const struct luaL_Reg tidytree_reg [] = {
 	{"updatewh", l_updatewh},
 	{"atputchild", l_atputchild},
 	{"dbind", l_dbind},
+	{"maxbottombetween", l_maxbottombetween},
 	{"dbindwhxy", l_dbindwhxy},
+	{"bottom", l_bottom},
 	{NULL, NULL} /* sentinel */
 };
  
