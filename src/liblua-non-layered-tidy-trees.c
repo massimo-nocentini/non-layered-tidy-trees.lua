@@ -46,17 +46,21 @@ static int l_mktree(lua_State *L) {
 	t->change = 0.0;
 	t->msel = 0.0;
 	t->mser = 0.0;
+	
 	t->tl = NULL;
 	t->tr = NULL;
 	t->el = NULL;
 	t->er = NULL;
+	
+	t->p = NULL;
+
 	t->cs = cs;
 	t->c = cs == 0 ? NULL : (tree_t **) malloc (sizeof(tree_t *) * cs);
 
 	/* Those two will be computed by the algorithm. */
 	t->level = -1;
 	t->childno = -1;
-	t->p = NULL;
+	t->centeredxy = -1;
 
 	lua_pushlightuserdata (L, t);
 
@@ -89,6 +93,9 @@ static int l_dbind(lua_State *L) {
 
 	lua_pushinteger (L, t->childno + 1);
 	lua_setfield (L, -2, "childno");
+
+	lua_pushboolean (L, t->centeredxy);
+	lua_setfield (L, -2, "centeredxy");
 	
 	lua_pushnumber (L, t->w);
 	lua_setfield (L, -2, "w");
@@ -170,14 +177,6 @@ static int l_dbindwhxy(lua_State *L) {
 	return 4;
 }
 
-static void free_tree (tree_t *t) {
-
-	for (int i = 0; i < t->cs; i++) free_tree (t->c[i]);
-
-	free (t->c);
-	free (t);
-}
-
 static int l_free(lua_State *L) {
 
 	tree_t *t = (tree_t *) lua_touserdata (L, -1);
@@ -236,6 +235,7 @@ static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
 		lua_call (L, 3, 0);
 	}
 
+	/*
 	printf("(%d (el: %d, er: %d, tl: %d, tr: %d), %d (el: %d, er: %d, tl: %d, tr: %d)): %lf, %lf\n", 
 			sr->idx, 
 			sr->el ? sr->el->idx: -1, sr->er ? sr->er->idx: -1,  
@@ -247,36 +247,46 @@ static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
 			cl->tl ? cl->tl->idx: -1, cl->tr ? cl->tr->idx: -1, 
 			
 			dist, cl->prelim + cl->mod - (sr->prelim + sr->mod) );
+	*/
 }
 
 
 static int l_layout(lua_State *L) {
 
+	treeinput_t input;
 	userdata_t ud;
 
 	ud.L = L;
 	ud.contourpairscb_absidx = -1;
 
 	lua_getfield (L, -1, "root");
-	tree_t *root = (tree_t *) lua_touserdata(L, -1);
+	input.t = (tree_t *) lua_touserdata(L, -1);
 	lua_pop(L, 1);
 
 	lua_getfield (L, -1, "vertically");
-	int vertically = lua_toboolean (L, -1);
+	input.vertically = lua_toboolean (L, -1);
 	lua_pop(L, 1);
 
 	lua_getfield (L, -1, "centeredxy");
-	int centeredxy = lua_toboolean (L, -1);
+	input.centeredxy = lua_toboolean (L, -1);
 	lua_pop(L, 1);
 
 	lua_getfield (L, -1, "contourpairscb");
 	if (lua_isfunction (L, -1) == 1) {
 		ud.contourpairscb_absidx = lua_absindex (L, -1);
+		
+		input.cpairscb = pairscb;
+		input.cpairsud = &ud;
+	} else {
+		input.cpairscb = input.cpairsud = NULL;
 	}
 
-	layout (root, vertically, centeredxy, &ud, NULL, NULL, pairscb);
+	input.mod = 0.0;
+	input.walkcb = input.walkud = NULL;
+	
+	layout (&input);
 
-	lua_pop(L, 1);	// contourpairscb
+	lua_pop(L, 1);	// then pop contourpairscb or nil.
 
 	return 0;
 }
@@ -286,16 +296,15 @@ typedef struct fringemaxbottom_s {
 	int vertically;
 } fringemaxbottom_t;
 
-
-static double maxbottom (tree_t *t, tree_t *to, int vertically) {
+static double maxbottom (tree_t* t, tree_t* to, int vertically, int* found) {
 
 	double b;
-  	double m = bottom (t, vertically) - (t->w / 2.0);
+  	double m = bottom (t, vertically);
 
-	for (int i = 0; i < t->cs; i++) {
+	for (int i = 0; !*found && i < t->cs; i++) {
 		tree_t *child = t->c[i];
-		if (child == to) return m;
-		b = maxbottom (child, to, vertically);
+		if (child == to) { *found = 1; return m; }
+		b = maxbottom (child, to, vertically, found);
 		m = b > m ? b : m;
 	}
 
@@ -316,17 +325,11 @@ static void maxbottombetween (tree_t *from, tree_t *to, fringemaxbottom_t *ud) {
 
     tree_t *child = p->c[i];
 
-	if (child == to) {
-		found = 1;
-		break;
-	}
+	if (child == to) { found = 1; break; }
 
-	b = maxbottom (child, to, ud->vertically);
+	b = maxbottom (child, to, ud->vertically, &found);
+
 	ud->bottom = b > ud->bottom ? b : ud->bottom;
-
-	// b = bottom (child->er, ud->vertically);
-	// ud->bottom = b > ud->bottom ? b : ud->bottom;
-
   }
 
   if (!found) maxbottombetween (p, to, ud);
@@ -339,7 +342,7 @@ static int l_maxbottombetween(lua_State *L) {
 	int vertically = lua_toboolean (L, -1);
 
 	fringemaxbottom_t ud;
-	ud.bottom = from->x - (from->w / 2.0);
+	ud.bottom = bottom (from->p, vertically);
 	ud.vertically = vertically;
 
 	maxbottombetween (from, to, &ud);
