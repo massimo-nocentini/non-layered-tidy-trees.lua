@@ -24,16 +24,7 @@ typedef struct userdata_s {
     int contourpairscb_absidx;
 } userdata_t;
 
-static int l_mktree(lua_State *L) {
-
-	lua_Integer idx = lua_tointeger(L, -6);
-	lua_Number w = lua_tonumber(L, -5);
-	lua_Number h = lua_tonumber(L, -4);
-	lua_Integer cs = lua_tointeger(L, -3);
-	lua_Number x = lua_tonumber(L, -2);
-	lua_Number y = lua_tonumber(L, -1);
-	
-	tree_t *t = (tree_t *) malloc (sizeof(tree_t));
+static void init_tree (tree_t * t, int idx, double w, double h, double x, double y, int cs) {
 
 	t->idx = idx;
 	t->w = w;
@@ -61,6 +52,21 @@ static int l_mktree(lua_State *L) {
 	t->level = -1;
 	t->childno = -1;
 	t->centeredxy = -1;
+
+}
+
+static int l_mktree(lua_State *L) {
+
+	lua_Integer idx = lua_tointeger(L, -6);
+	lua_Number w = lua_tonumber(L, -5);
+	lua_Number h = lua_tonumber(L, -4);
+	lua_Integer cs = lua_tointeger(L, -3);
+	lua_Number x = lua_tonumber(L, -2);
+	lua_Number y = lua_tonumber(L, -1);
+	
+	tree_t *t = (tree_t *) malloc (sizeof(tree_t));
+	
+	init_tree (t, idx, w, h, x, y, cs);
 
 	lua_pushlightuserdata (L, t);
 
@@ -220,6 +226,27 @@ static int l_flatcoordinatesinto(lua_State *L) {
 	return 0;
 }
 
+
+static void flat_xy_coordinatesinto (tree_t *t, double *array) {
+
+	for (int i = 0; i < t->cs; i++) flat_xy_coordinatesinto (t->c[i], array);
+
+	int idx = (t->idx) * 2;
+
+	array[idx] = t->x;
+	array[idx + 1] = t->y;
+}
+
+static int l_flat_xy_coordinatesinto(lua_State *L) {
+
+	tree_t *t = (tree_t *) lua_touserdata(L, -2);
+	double *a = (double *) lua_touserdata(L, -1);
+
+	flat_xy_coordinatesinto (t, a);
+
+	return 0;
+}
+
 static void pairscb (tree_t *sr, tree_t *cl, double dist, void *userdata) {
 	userdata_t *ud = (userdata_t *) userdata;
 
@@ -363,13 +390,49 @@ static int l_bottom (lua_State *L) {
 	lua_pushnumber (L, b);
 
 	return 1;
+}
 
+static int l_reifyflatchunks(lua_State *L) {
+
+	int n = lua_tointeger (L, -4);			// total number of nodes.
+	double * whxy = (double *) lua_touserdata (L, -3);
+	int * children = (int *) lua_touserdata (L, -2);
+	int rooti = lua_tointeger (L, -1) - 1;	// Lua works in 1-based indexing.
+
+	int nedges, i, j;
+
+	tree_t ** nodes = (tree_t **) malloc (sizeof(tree_t *) * n);
+
+	for (i = 0; i < n; i++) {
+
+		tree_t * node = (tree_t *) malloc (sizeof(tree_t));
+		
+		init_tree (node, i, whxy[i], whxy[i + n], 0.0, 0.0, children[i]);
+
+		nodes[i] = node;
+	}
+
+	for (i = 0, nedges = n; i < n; i++) {
+
+		tree_t * each = nodes[i];
+		for (j = 0; j < each->cs; j++, nedges++) each->c[j] = nodes[children[nedges] - 1];
+	}
+
+	tree_t * root = (tree_t *) malloc (sizeof (tree_t));
+	memcpy (root, nodes[rooti], sizeof (tree_t));
+
+	free (nodes);
+
+	lua_pushlightuserdata (L, root);
+
+	return 1;
 }
 
 static const struct luaL_Reg tidytree_reg [] = {
 	{"layout", l_layout},
 	{"mktree", l_mktree},
 	{"flatcoordinatesinto", l_flatcoordinatesinto},
+	{"flat_xy_coordinatesinto", l_flat_xy_coordinatesinto},
 	{"free", l_free},
 	{"updatewh", l_updatewh},
 	{"atputchild", l_atputchild},
@@ -377,6 +440,7 @@ static const struct luaL_Reg tidytree_reg [] = {
 	{"maxbottombetween", l_maxbottombetween},
 	{"dbindwhxy", l_dbindwhxy},
 	{"bottom", l_bottom},
+	{"reifyflatchunks", l_reifyflatchunks},
 	{NULL, NULL} /* sentinel */
 };
  
