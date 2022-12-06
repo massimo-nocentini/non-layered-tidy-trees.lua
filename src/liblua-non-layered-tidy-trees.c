@@ -204,9 +204,9 @@ static int l_updatewh(lua_State *L) {
 	return 0;
 }
 
-static void flatcoordinatesinto (tree_t *t, double *array) {
+static void flat_xywh_into (tree_t *t, double *array) {
 
-	for (int i = 0; i < t->cs; i++) flatcoordinatesinto (t->c[i], array);
+	for (int i = 0; i < t->cs; i++) flat_xywh_into (t->c[i], array);
 
 	int idx = (t->idx - 1) * 4;
 
@@ -216,33 +216,31 @@ static void flatcoordinatesinto (tree_t *t, double *array) {
 	array[idx + 3] = t->h;
 }
 
-static int l_flatcoordinatesinto(lua_State *L) {
+static int l_flat_xywh_into(lua_State *L) {
 
 	tree_t *t = (tree_t *) lua_touserdata(L, -2);
-	double *a = (double *) lua_touserdata(L, -1);
+	double *a = (double *) lua_touserdata(L, -1); // an array of doubles, really.
 
-	flatcoordinatesinto (t, a);
+	flat_xywh_into (t, a);
 
 	return 0;
 }
 
+static int l_flat_xy_into (lua_State *L) {
 
-static void flat_xy_coordinatesinto (tree_t *t, double *array) {
+	int n = lua_tointeger (L, -3);
+	tree_t **nodes = (tree_t **) lua_touserdata(L, -2);
+	double *xy = (double *) lua_touserdata(L, -1);
 
-	for (int i = 0; i < t->cs; i++) flat_xy_coordinatesinto (t->c[i], array);
+	tree_t * node;
 
-	int idx = (t->idx) * 2;
+	for (int i = 0; i < n; i++) {
 
-	array[idx] = t->x;
-	array[idx + 1] = t->y;
-}
-
-static int l_flat_xy_coordinatesinto(lua_State *L) {
-
-	tree_t *t = (tree_t *) lua_touserdata(L, -2);
-	double *a = (double *) lua_touserdata(L, -1);
-
-	flat_xy_coordinatesinto (t, a);
+		node = nodes[i];
+		
+		xy[node->idx - 1] = node->x;
+		xy[node->idx - 1 + n] = node->y;
+	}
 
 	return 0;
 }
@@ -395,44 +393,44 @@ static int l_bottom (lua_State *L) {
 static int l_reifyflatchunks(lua_State *L) {
 
 	int n = lua_tointeger (L, -4);			// total number of nodes.
-	double * whxy = (double *) lua_touserdata (L, -3);
+	double * wh = (double *) lua_touserdata (L, -3);
 	int * children = (int *) lua_touserdata (L, -2);
 	int rooti = lua_tointeger (L, -1) - 1;	// Lua works in 1-based indexing.
 
 	int nedges, i, j;
 
+	tree_t * node;		// auxiliary variable to reference newly allocated memory locations.
 	tree_t ** nodes = (tree_t **) malloc (sizeof(tree_t *) * n);
 
 	for (i = 0; i < n; i++) {
 
-		tree_t * node = (tree_t *) malloc (sizeof(tree_t));
+		node = (tree_t *) malloc (sizeof(tree_t));
 		
-		init_tree (node, i, whxy[i], whxy[i + n], 0.0, 0.0, children[i]);
+		init_tree (node, i + 1, wh[i], wh[i + n], 0.0, 0.0, children[i]);
 
 		nodes[i] = node;
 	}
 
-	for (i = 0, nedges = n; i < n; i++) {
+	for (i = 0, nedges = n; i < n; i++) 
+		for (node = nodes[i], j = 0; j < node->cs; j++, nedges++) 
+			node->c[j] = nodes[children[nedges] - 1];
 
-		tree_t * each = nodes[i];
-		for (j = 0; j < each->cs; j++, nedges++) each->c[j] = nodes[children[nedges] - 1];
-	}
+	// node = (tree_t *) malloc (sizeof (tree_t));
+	// memcpy (node, nodes[rooti], sizeof (tree_t));
 
-	tree_t * root = (tree_t *) malloc (sizeof (tree_t));
-	memcpy (root, nodes[rooti], sizeof (tree_t));
+	// free (nodes);	// release the memory that keeps the whole array but not each individual node.
 
-	free (nodes);
+	lua_pushlightuserdata (L, nodes[rooti]);	// push the root node.
+	lua_pushlightuserdata (L, nodes);			// push also the whole array to speed up the fetching phase.
 
-	lua_pushlightuserdata (L, root);
-
-	return 1;
+	return 2;
 }
 
 static const struct luaL_Reg tidytree_reg [] = {
 	{"layout", l_layout},
 	{"mktree", l_mktree},
-	{"flatcoordinatesinto", l_flatcoordinatesinto},
-	{"flat_xy_coordinatesinto", l_flat_xy_coordinatesinto},
+	{"flat_xywh_into", l_flat_xywh_into},
+	{"flat_xy_into", l_flat_xy_into},
 	{"free", l_free},
 	{"updatewh", l_updatewh},
 	{"atputchild", l_atputchild},
