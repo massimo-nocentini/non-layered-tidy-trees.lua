@@ -392,28 +392,32 @@ static int l_bottom (lua_State *L) {
 
 static int l_reifyflatchunks(lua_State *L) {
 
-	int n = lua_tointeger (L, -4);			// total number of nodes.
-	double * wh = (double *) lua_touserdata (L, -3);
+	int n = lua_tointeger (L, -5);			// total number of nodes.
+	double * wh = (double *) lua_touserdata (L, -4);
+	double * whg = (double *) lua_touserdata (L, -3);
 	int * children = (int *) lua_touserdata (L, -2);
 	int rooti = lua_tointeger (L, -1) - 1;	// Lua works in 1-based indexing.
 
 	int nedges, i, j;
 
 	tree_t * node;		// auxiliary variable to reference newly allocated memory locations.
-	tree_t ** nodes = (tree_t **) malloc (sizeof(tree_t *) * n);
+	tree_t ** nodes = (tree_t **) malloc (sizeof(tree_t *) * n * 2);
 
 	for (i = 0; i < n; i++) {
 
 		node = (tree_t *) malloc (sizeof(tree_t));
-		
 		init_tree (node, i + 1, wh[i], wh[i + n], 0.0, 0.0, children[i]);
+		nodes[i] = node;	// the node with the content.
 
-		nodes[i] = node;
+		node = (tree_t *) malloc (sizeof(tree_t));
+		init_tree (node, i + 1 + n, whg[i], whg[i + n], 0.0, 0.0, 1);
+		node->c[0] = nodes[i];
+		nodes[i + n] = node;	// the node that separates.
 	}
 
 	for (i = 0, nedges = n; i < n; i++) 
 		for (node = nodes[i], j = 0; j < node->cs; j++, nedges++) 
-			node->c[j] = nodes[children[nedges] - 1];
+			node->c[j] = nodes[children[nedges] - 1 + n];
 
 	// node = (tree_t *) malloc (sizeof (tree_t));
 	// memcpy (node, nodes[rooti], sizeof (tree_t));
