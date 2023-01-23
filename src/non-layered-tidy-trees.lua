@@ -12,9 +12,7 @@ function nonlayeredtidytrees.trees (rel)
     do
         local idx = 1
         for k, each in pairs (rel) do 
-            tree[k] = libluanonlayeredtidytrees.mktree (
-                        each.idx or idx, each.w, each.h, #each.c, 
-                        each.m or 0.0, each.x or 0.0, each.y or 0.0)
+            tree[k] = libluanonlayeredtidytrees.mktree (each.idx or idx, each.w, each.h, #each.c, each.m or 0.0)
             itree[tree[k]] = k
             idx = idx + 1
         end
