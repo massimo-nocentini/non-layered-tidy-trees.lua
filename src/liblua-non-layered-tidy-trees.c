@@ -445,7 +445,7 @@ int l_reifyflatchunks(lua_State *L)
 	int *children = (int *)lua_touserdata(L, -2);
 	int rooti = lua_tointeger(L, -1) - 1; // Lua works in 1-based indexing therefore shift back by 1.
 
-	int nedges, i, j;
+	int i, j;
 
 	tree_t *node; // auxiliary variable to reference newly allocated memory locations.
 	tree_t **nodes = (tree_t **)malloc(sizeof(tree_t *) * n * 2);
@@ -460,7 +460,9 @@ int l_reifyflatchunks(lua_State *L)
 		nodes[i + n] = node; // the node that separates.
 	}
 
-	for (i = 0, nedges = n; i < n; i++)
+	int nedges = n;
+	
+	for (i = 0; i < n; i++)
 		for (node = nodes[i], j = 0; j < node->cs; j++, nedges++)
 			node->c[j] = nodes[children[nedges] - 1 + n];
 
