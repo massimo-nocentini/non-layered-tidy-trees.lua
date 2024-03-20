@@ -1,13 +1,4 @@
 
-/*
-	This is a glue c file for importing delta client c functions into Lua workflow.
-*/
-
-#ifdef _WIN32
-#define EXPORT __declspec(dllexport)
-#else
-#define EXPORT __attribute__((visibility("default")))
-#endif
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,8 +15,10 @@ typedef struct userdata_s
 	int contourpairscb_absidx;
 } userdata_t;
 
-static void init_tree(tree_t *t, int idx, double w, double h, double m, int cs, int isdummy)
+tree_t *init_tree(int idx, double w, double h, double m, int cs, int isdummy)
 {
+	tree_t *t = (tree_t *)malloc(sizeof(tree_t));
+
 	t->idx = idx;
 	t->w = w;
 	t->h = h;
@@ -34,7 +27,7 @@ static void init_tree(tree_t *t, int idx, double w, double h, double m, int cs, 
 
 	t->x = 0.0;
 	t->y = 0.0;
-	
+
 	t->prelim = 0.0;
 	t->mod = 0.0;
 	t->shift = 0.0;
@@ -56,9 +49,11 @@ static void init_tree(tree_t *t, int idx, double w, double h, double m, int cs, 
 	t->level = -1;
 	t->childno = -1;
 	t->centeredxy = -1;
+
+	return t;
 }
 
-static int l_mktree(lua_State *L)
+int l_mktree(lua_State *L)
 {
 
 	lua_Integer idx = lua_tointeger(L, -5);
@@ -67,16 +62,14 @@ static int l_mktree(lua_State *L)
 	lua_Integer cs = lua_tointeger(L, -2);
 	lua_Number m = lua_tonumber(L, -1);
 
-	tree_t *t = (tree_t *)malloc(sizeof(tree_t));
-
-	init_tree(t, idx, w, h, m, cs, 0);
+	tree_t *t = init_tree(idx, w, h, m, cs, 0);
 
 	lua_pushlightuserdata(L, t);
 
 	return 1;
 }
 
-static int l_atputchild(lua_State *L)
+int l_atputchild(lua_State *L)
 {
 
 	tree_t *parent = (tree_t *)lua_touserdata(L, -3);
@@ -89,7 +82,7 @@ static int l_atputchild(lua_State *L)
 	return 0;
 }
 
-static int l_dbind(lua_State *L)
+int l_dbind(lua_State *L)
 {
 
 	tree_t *t = (tree_t *)lua_touserdata(L, -1);
@@ -188,7 +181,7 @@ static int l_dbind(lua_State *L)
 	return 1;
 }
 
-static int l_dbindwhxy(lua_State *L)
+int l_dbindwhxy(lua_State *L)
 {
 
 	tree_t *t = (tree_t *)lua_touserdata(L, -1);
@@ -201,7 +194,7 @@ static int l_dbindwhxy(lua_State *L)
 	return 4;
 }
 
-static int l_free(lua_State *L)
+int l_free(lua_State *L)
 {
 
 	tree_t *t = (tree_t *)lua_touserdata(L, -1);
@@ -211,7 +204,7 @@ static int l_free(lua_State *L)
 	return 0;
 }
 
-static int l_updatewh(lua_State *L)
+int l_updatewh(lua_State *L)
 {
 
 	tree_t *t = (tree_t *)lua_touserdata(L, -3);
@@ -224,7 +217,7 @@ static int l_updatewh(lua_State *L)
 	return 0;
 }
 
-static void flat_xywh_into(tree_t *t, double *array)
+void flat_xywh_into(tree_t *t, double *array)
 {
 
 	for (int i = 0; i < t->cs; i++)
@@ -238,7 +231,7 @@ static void flat_xywh_into(tree_t *t, double *array)
 	array[idx + 3] = t->h;
 }
 
-static int l_flat_xywh_into(lua_State *L)
+int l_flat_xywh_into(lua_State *L)
 {
 
 	tree_t *t = (tree_t *)lua_touserdata(L, -2);
@@ -249,7 +242,7 @@ static int l_flat_xywh_into(lua_State *L)
 	return 0;
 }
 
-static int l_flat_xy_into(lua_State *L)
+int l_flat_xy_into(lua_State *L)
 {
 
 	int n = lua_tointeger(L, -3);
@@ -270,7 +263,7 @@ static int l_flat_xy_into(lua_State *L)
 	return 0;
 }
 
-static void pairscb(tree_t *sr, tree_t *cl, double dist, void *userdata)
+void pairscb(tree_t *sr, tree_t *cl, double dist, void *userdata)
 {
 	userdata_t *ud = (userdata_t *)userdata;
 
@@ -302,7 +295,7 @@ static void pairscb(tree_t *sr, tree_t *cl, double dist, void *userdata)
 	*/
 }
 
-static int l_layout(lua_State *L)
+int l_layout(lua_State *L)
 {
 
 	treeinput_t input;
@@ -324,11 +317,11 @@ static int l_layout(lua_State *L)
 	lua_pop(L, 1);
 
 	lua_getfield(L, -1, "x");
-	input.x = lua_isnumber(L, -1) == 1 ? lua_tonumber (L, -1) : 0.0;
+	input.x = lua_isnumber(L, -1) == 1 ? lua_tonumber(L, -1) : 0.0;
 	lua_pop(L, 1);
 
 	lua_getfield(L, -1, "y");
-	input.y = lua_isnumber(L, -1) == 1 ? lua_tonumber (L, -1) : 0.0;
+	input.y = lua_isnumber(L, -1) == 1 ? lua_tonumber(L, -1) : 0.0;
 	lua_pop(L, 1);
 
 	lua_getfield(L, -1, "contourpairscb");
@@ -359,7 +352,7 @@ typedef struct fringemaxbottom_s
 	int vertically;
 } fringemaxbottom_t;
 
-static double maxbottom(tree_t *t, tree_t *to, int vertically, int *found)
+double maxbottom(tree_t *t, tree_t *to, int vertically, int *found)
 {
 
 	double b;
@@ -380,7 +373,7 @@ static double maxbottom(tree_t *t, tree_t *to, int vertically, int *found)
 	return m;
 }
 
-static void maxbottombetween(tree_t *from, tree_t *to, fringemaxbottom_t *ud)
+void maxbottombetween(tree_t *from, tree_t *to, fringemaxbottom_t *ud)
 {
 
 	double b;
@@ -412,7 +405,7 @@ static void maxbottombetween(tree_t *from, tree_t *to, fringemaxbottom_t *ud)
 		maxbottombetween(p, to, ud);
 }
 
-static int l_maxbottombetween(lua_State *L)
+int l_maxbottombetween(lua_State *L)
 {
 
 	tree_t *from = (tree_t *)lua_touserdata(L, -3);
@@ -430,7 +423,7 @@ static int l_maxbottombetween(lua_State *L)
 	return 1;
 }
 
-static int l_bottom(lua_State *L)
+int l_bottom(lua_State *L)
 {
 
 	tree_t *t = (tree_t *)lua_touserdata(L, -2);
@@ -443,7 +436,7 @@ static int l_bottom(lua_State *L)
 	return 1;
 }
 
-static int l_reifyflatchunks(lua_State *L)
+int l_reifyflatchunks(lua_State *L)
 {
 
 	int n = lua_tointeger(L, -5); // total number of nodes.
@@ -459,12 +452,10 @@ static int l_reifyflatchunks(lua_State *L)
 
 	for (i = 0; i < n; i++)
 	{
-		node = (tree_t *)malloc(sizeof(tree_t));
-		init_tree(node, i + 1, wh[i], wh[i + n], wh[i + 2 * n], children[i], 0);
+		node = init_tree(i + 1, wh[i], wh[i + n], wh[i + 2 * n], children[i], 0);
 		nodes[i] = node; // the node with the content.
 
-		node = (tree_t *)malloc(sizeof(tree_t));
-		init_tree(node, i + 1 + n, whg[i], whg[i + n], 0.0, 1, 1);
+		node = init_tree(i + 1 + n, whg[i], whg[i + n], 0.0, 1, 1);
 		node->c[0] = nodes[i];
 		nodes[i + n] = node; // the node that separates.
 	}
@@ -484,7 +475,7 @@ static int l_reifyflatchunks(lua_State *L)
 	return 2;
 }
 
-static const struct luaL_Reg tidytree_reg[] = {
+const struct luaL_Reg tidytree_reg[] = {
 	{"layout", l_layout},
 	{"mktree", l_mktree},
 	{"flat_xywh_into", l_flat_xywh_into},
@@ -500,7 +491,7 @@ static const struct luaL_Reg tidytree_reg[] = {
 	{NULL, NULL} /* sentinel */
 };
 
-EXPORT int luaopen_libluanonlayeredtidytrees(lua_State *L)
+int luaopen_libluanonlayeredtidytrees(lua_State *L)
 {
 	luaL_newlib(L, tidytree_reg);
 	return 1;
