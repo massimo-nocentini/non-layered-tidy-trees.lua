@@ -1,6 +1,7 @@
 
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
@@ -15,54 +16,15 @@ typedef struct userdata_s
 	int contourpairscb_absidx;
 } userdata_t;
 
-tree_t *init_tree(int idx, double w, double h, double m, int cs, int isdummy)
-{
-	tree_t *t = (tree_t *)malloc(sizeof(tree_t));
-
-	t->idx = idx;
-	t->w = w;
-	t->h = h;
-	t->margin = m;
-	t->isdummy = isdummy;
-
-	t->x = 0.0;
-	t->y = 0.0;
-
-	t->prelim = 0.0;
-	t->mod = 0.0;
-	t->shift = 0.0;
-	t->change = 0.0;
-	t->msel = 0.0;
-	t->mser = 0.0;
-
-	t->tl = NULL;
-	t->tr = NULL;
-	t->el = NULL;
-	t->er = NULL;
-
-	t->p = NULL;
-
-	t->cs = cs;
-	t->c = cs == 0 ? NULL : (tree_t **)malloc(sizeof(tree_t *) * cs);
-
-	/* Those two will be computed by the algorithm. */
-	t->level = -1;
-	t->childno = -1;
-	t->centeredxy = -1;
-
-	return t;
-}
-
 int l_mktree(lua_State *L)
 {
+	lua_Integer idx = lua_tointeger(L, 1);
+	lua_Number w = lua_tonumber(L, 2);
+	lua_Number h = lua_tonumber(L, 3);
+	lua_Integer cs = lua_tointeger(L, 4);
+	lua_Number m = lua_tonumber(L, 5);
 
-	lua_Integer idx = lua_tointeger(L, -5);
-	lua_Number w = lua_tonumber(L, -4);
-	lua_Number h = lua_tonumber(L, -3);
-	lua_Integer cs = lua_tointeger(L, -2);
-	lua_Number m = lua_tonumber(L, -1);
-
-	tree_t *t = init_tree(idx, w, h, m, cs, 0);
+	tree_t *t = init_tree(idx, w, h, m, cs, false);
 
 	lua_pushlightuserdata(L, t);
 
@@ -72,9 +34,9 @@ int l_mktree(lua_State *L)
 int l_atputchild(lua_State *L)
 {
 
-	tree_t *parent = (tree_t *)lua_touserdata(L, -3);
-	int i = lua_tointeger(L, -2);
-	tree_t *child = (tree_t *)lua_touserdata(L, -1);
+	tree_t *parent = (tree_t *)lua_touserdata(L, 1);
+	int i = lua_tointeger(L, 2);
+	tree_t *child = (tree_t *)lua_touserdata(L, 3);
 
 	parent->c[i - 1] = child;
 	child->p = parent;
@@ -85,7 +47,7 @@ int l_atputchild(lua_State *L)
 int l_dbind(lua_State *L)
 {
 
-	tree_t *t = (tree_t *)lua_touserdata(L, -1);
+	tree_t *t = (tree_t *)lua_touserdata(L, 1);
 
 	lua_newtable(L);
 
@@ -184,20 +146,28 @@ int l_dbind(lua_State *L)
 int l_dbindwhxy(lua_State *L)
 {
 
-	tree_t *t = (tree_t *)lua_touserdata(L, -1);
+	tree_t *t = (tree_t *)lua_touserdata(L, 1);
 
-	lua_pushnumber(L, t->w);
-	lua_pushnumber(L, t->h);
-	lua_pushnumber(L, t->x);
-	lua_pushnumber(L, t->y);
+	int ret = 4;
+	if (lua_checkstack(L, ret))
+	{
+		lua_pushnumber(L, t->w);
+		lua_pushnumber(L, t->h);
+		lua_pushnumber(L, t->x);
+		lua_pushnumber(L, t->y);
+	}
+	else
+	{
+		ret = 0;
+	}
 
-	return 4;
+	return ret;
 }
 
 int l_free(lua_State *L)
 {
 
-	tree_t *t = (tree_t *)lua_touserdata(L, -1);
+	tree_t *t = (tree_t *)lua_touserdata(L, 1);
 
 	free_tree(t);
 
@@ -207,9 +177,9 @@ int l_free(lua_State *L)
 int l_updatewh(lua_State *L)
 {
 
-	tree_t *t = (tree_t *)lua_touserdata(L, -3);
-	lua_Number w = lua_tonumber(L, -2);
-	lua_Number h = lua_tonumber(L, -1);
+	tree_t *t = (tree_t *)lua_touserdata(L, 1);
+	lua_Number w = lua_tonumber(L, 2);
+	lua_Number h = lua_tonumber(L, 3);
 
 	t->w = w;
 	t->h = h;
@@ -217,25 +187,11 @@ int l_updatewh(lua_State *L)
 	return 0;
 }
 
-void flat_xywh_into(tree_t *t, double *array)
-{
-
-	for (int i = 0; i < t->cs; i++)
-		flat_xywh_into(t->c[i], array);
-
-	int idx = (t->idx - 1) * 4;
-
-	array[idx] = t->x;
-	array[idx + 1] = t->y;
-	array[idx + 2] = t->w;
-	array[idx + 3] = t->h;
-}
-
 int l_flat_xywh_into(lua_State *L)
 {
 
-	tree_t *t = (tree_t *)lua_touserdata(L, -2);
-	double *a = (double *)lua_touserdata(L, -1); // an array of doubles, really.
+	tree_t *t = (tree_t *)lua_touserdata(L, 1);
+	double *a = (double *)lua_touserdata(L, 2);
 
 	flat_xywh_into(t, a);
 
@@ -245,20 +201,11 @@ int l_flat_xywh_into(lua_State *L)
 int l_flat_xy_into(lua_State *L)
 {
 
-	int n = lua_tointeger(L, -3);
-	tree_t **nodes = (tree_t **)lua_touserdata(L, -2);
-	double *xy = (double *)lua_touserdata(L, -1);
+	int n = lua_tointeger(L, 1);
+	tree_t **nodes = (tree_t **)lua_touserdata(L, 2);
+	double *xy = (double *)lua_touserdata(L, 3);
 
-	tree_t *node;
-
-	for (int i = 0; i < n; i++)
-	{
-
-		node = nodes[i];
-
-		xy[node->idx - 1] = node->x;
-		xy[node->idx - 1 + n] = node->y;
-	}
+	flat_xy_into(n, nodes, xy);
 
 	return 0;
 }
@@ -346,65 +293,6 @@ int l_layout(lua_State *L)
 	return 0;
 }
 
-typedef struct fringemaxbottom_s
-{
-	double bottom;
-	int vertically;
-} fringemaxbottom_t;
-
-double maxbottom(tree_t *t, tree_t *to, int vertically, int *found)
-{
-
-	double b;
-	double m = bottom(t, vertically);
-
-	for (int i = 0; !*found && i < t->cs; i++)
-	{
-		tree_t *child = t->c[i];
-		if (child == to)
-		{
-			*found = 1;
-			return m;
-		}
-		b = maxbottom(child, to, vertically, found);
-		m = b > m ? b : m;
-	}
-
-	return m;
-}
-
-void maxbottombetween(tree_t *from, tree_t *to, fringemaxbottom_t *ud)
-{
-
-	double b;
-	tree_t *p = from->p;
-
-	// assert (p != NULL);
-	if (p == NULL)
-		return;
-
-	int found = 0;
-
-	for (int i = from->childno + 1; !found && i < p->cs; i++)
-	{
-
-		tree_t *child = p->c[i];
-
-		if (child == to)
-		{
-			found = 1;
-			break;
-		}
-
-		b = maxbottom(child, to, ud->vertically, &found);
-
-		ud->bottom = b > ud->bottom ? b : ud->bottom;
-	}
-
-	if (!found)
-		maxbottombetween(p, to, ud);
-}
-
 int l_maxbottombetween(lua_State *L)
 {
 
@@ -445,31 +333,7 @@ int l_reifyflatchunks(lua_State *L)
 	int *children = (int *)lua_touserdata(L, -2);
 	int rooti = lua_tointeger(L, -1) - 1; // Lua works in 1-based indexing therefore shift back by 1.
 
-	int i, j;
-
-	tree_t *node; // auxiliary variable to reference newly allocated memory locations.
-	tree_t **nodes = (tree_t **)malloc(sizeof(tree_t *) * n * 2);
-
-	for (i = 0; i < n; i++)
-	{
-		node = init_tree(i + 1, wh[i], wh[i + n], wh[i + 2 * n], children[i], 0);
-		nodes[i] = node; // the node with the content.
-
-		node = init_tree(i + 1 + n, whg[i], whg[i + n], 0.0, 1, 1);
-		node->c[0] = nodes[i];
-		nodes[i + n] = node; // the node that separates.
-	}
-
-	int nedges = n;
-	
-	for (i = 0; i < n; i++)
-		for (node = nodes[i], j = 0; j < node->cs; j++, nedges++)
-			node->c[j] = nodes[children[nedges] - 1 + n];
-
-	// node = (tree_t *) malloc (sizeof (tree_t));
-	// memcpy (node, nodes[rooti], sizeof (tree_t));
-
-	// free (nodes);	// release the memory that keeps the whole array but not each individual node.
+	tree_t **nodes = reifyflatchunks(n, wh, whg, children, rooti);
 
 	lua_pushlightuserdata(L, nodes[rooti + n]); // push the root node.
 	lua_pushlightuserdata(L, nodes);			// push also the whole array to speed up the fetching phase.
