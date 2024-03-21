@@ -333,10 +333,11 @@ int l_reifyflatchunks(lua_State *L)
 	int *children = (int *)lua_touserdata(L, -2);
 	int rooti = lua_tointeger(L, -1) - 1; // Lua works in 1-based indexing therefore shift back by 1.
 
-	tree_t **nodes = reifyflatchunks(n, wh, whg, children, rooti);
+	tree_t *root;
+	tree_t **nodes = reifyflatchunks(n, wh, whg, children, rooti, &root);
 
-	lua_pushlightuserdata(L, nodes[rooti + n]); // push the root node.
-	lua_pushlightuserdata(L, nodes);			// push also the whole array to speed up the fetching phase.
+	lua_pushlightuserdata(L, root);	 // push the root node.
+	lua_pushlightuserdata(L, nodes); // push also the whole array to speed up the fetching phase.
 
 	return 2;
 }
