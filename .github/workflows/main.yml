@@ -26,6 +26,8 @@ jobs:
           cd ..
       - name: Copying
         run: |
+          mkdir artifacts
+          cd artifacts
           mkdir bin && cp /usr/local/bin/lua* bin/
           mkdir include && cp /usr/local/include/lua* include/
           mkdir lib && cp /usr/local/lib/liblua* /usr/local/lib/libnonlayeredtidytrees.so lib/
@@ -35,8 +37,8 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ubuntu-latest
-          path: ubuntu-latest-non-layered-tidy-trees-lua.zip
+          name: ubuntu-latest-non-layered-tidy-trees.lua
+          path: artifacts
       # - name: Upload release assets
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
