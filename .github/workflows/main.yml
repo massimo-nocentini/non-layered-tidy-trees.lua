@@ -82,9 +82,10 @@ jobs:
           cp /ucrt64/bin/*.dll lib/
           mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.dll lib/lua/5.4/
           mkdir -p share/lua/5.4 && cp ../src/*.lua share/lua/5.4/
+          zip -r win-ucrt-non-layered-tidy-trees-lua.zip *
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: win-ucrt-non-layered-tidy-trees.lua
-          path: artifacts
+          path: artifacts/win-ucrt-non-layered-tidy-trees-lua.zip
         
