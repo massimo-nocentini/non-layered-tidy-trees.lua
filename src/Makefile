@@ -6,7 +6,7 @@ macos:
 	gcc -O2 -fPIC -Wall -dynamiclib -I/usr/local/include/ -o libluanonlayeredtidytrees.dylib liblua-non-layered-tidy-trees.c -L/usr/local/lib/ -llua -lnonlayeredtidytrees
 
 mingw:
-	gcc -O2 -fPIC -Wall -shared -o libluanonlayeredtidytrees.dll liblua-non-layered-tidy-trees.c -L/ucrt64/bin/ -llua54 -lnonlayeredtidytrees
+	gcc -O2 -fPIC -Wall -shared -o libluanonlayeredtidytrees.dll liblua-non-layered-tidy-trees.c -L/ucrt64/lib/ -llua -lnonlayeredtidytrees
 
 test:
 	gcc -I/usr/local/include/ -o libluanonlayeredtidytrees.dll liblua-non-layered-tidy-trees.c -L/usr/local/lib/ -llua -lnonlayeredtidytrees
