@@ -81,7 +81,7 @@ jobs:
           mkdir include
           cp /ucrt64/include/{lauxlib.h,lua.h,lua.hpp,luaconf.h,lualib.h,non-layered-tidy-trees.h} include/
           mkdir lib
-          cp /ucrt64/bin/lua54.dll /ucrt64/lib/liblua* /ucrt64/lib/libnonlayeredtidytrees.dll lib/
+          cp /ucrt64/bin/lua54.dll /ucrt64/lib/libnonlayeredtidytrees.dll lib/
           mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.dll lib/lua/5.4/
           mkdir -p share/lua/5.4 && cp ../src/*.lua share/lua/5.4/
           zip -r win-ucrt-non-layered-tidy-trees-lua.zip *
