@@ -12,18 +12,17 @@ jobs:
           cd lua-5.4.6
           make "MYCFLAGS=-fPIC" linux
           sudo make install
-      - name: C implementation
+      - name: non-layered-tidy-trees.c
         run: |
           git clone https://github.com/massimo-nocentini/non-layered-tidy-trees.c.git
           cd non-layered-tidy-trees.c/src
           make
           sudo make install
       - uses: actions/checkout@v4
-      - name: Build
+      - name: non-layered-tidy-trees.lua
         run: |
           cd src
           make
-          cd ..
       - name: Copying
         run: |
           mkdir artifacts
@@ -33,7 +32,6 @@ jobs:
           mkdir lib && cp /usr/local/lib/liblua* /usr/local/lib/libnonlayeredtidytrees.so lib/
           mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.so lib/lua/5.4/
           mkdir -p share/lua/5.4 && cp ../src/*.lua share/lua/5.4/
-        # zip -r ubuntu-latest-non-layered-tidy-trees-lua.zip bin/ include/ lib/ share/
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -43,3 +41,51 @@ jobs:
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       #   run: gh release create r${{github.run_number}} ubuntu-latest.zip
+
+
+  windows:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          msystem: UCRT64
+          install: >-
+            mingw-w64-ucrt-x86_64-curl
+            git
+            zip
+            mingw-w64-ucrt-x86_64-lua
+            mingw-w64-ucrt-x86_64-wget
+            mingw-w64-ucrt-x86_64-toolchain
+      - name: non-layered-tidy-trees.c
+        shell: msys2 {0}
+        run: |
+          git clone https://github.com/massimo-nocentini/non-layered-tidy-trees.c.git
+          cd non-layered-tidy-trees.c/src
+          mingw32-make mingw
+          make mingw-install
+      - uses: actions/checkout@v4
+      - name: non-layered-tidy-trees.lua
+        shell: msys2 {0}
+        run: |
+          cd src
+          mingw32-make mingw
+          cd ..
+      - name: Copying
+        run: |
+          mkdir artifacts 
+          cd artifacts
+          mkdir bin && cp /ucrt64/bin/lua*.exe bin/
+          mkdir include && cp /ucrt64/include/*.h /usr/local/include/*.h include/
+          mkdir lib && cp /ucrt64/bin/*.dll /usr/local/lib/liblua* /usr/local/lib/libnonlayeredtidytrees.so lib/
+          mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.dll lib/lua/5.4/
+          mkdir -p share/lua/5.4 && cp ../src/*.lua share/lua/5.4/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: win-ucrt-non-layered-tidy-trees.lua
+          path: artifacts
+        
