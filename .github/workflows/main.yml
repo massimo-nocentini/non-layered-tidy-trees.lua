@@ -31,9 +31,9 @@ jobs:
           mkdir bin && cp /usr/local/bin/lua* bin/
           mkdir include && cp /usr/local/include/lua* include/
           mkdir lib && cp /usr/local/lib/liblua* /usr/local/lib/libnonlayeredtidytrees.so lib/
-          mkdir -p lib/lua/5.4 && cp src/libluanonlayeredtidytrees.so lib/lua/5.4/
-          mkdir -p share/lua/5.4 && cp src/*.lua share/lua/5.4/
-          zip -r ubuntu-latest-non-layered-tidy-trees-lua.zip bin/ include/ lib/ share/
+          mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.so lib/lua/5.4/
+          mkdir -p share/lua/5.4 && cp ../src/*.lua share/lua/5.4/
+        # zip -r ubuntu-latest-non-layered-tidy-trees-lua.zip bin/ include/ lib/ share/
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
