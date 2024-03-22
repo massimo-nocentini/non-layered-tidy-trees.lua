@@ -74,6 +74,7 @@ jobs:
           cd src
           ls /usr/local/include
           ls /usr/local/lib
+          ls /ucrt64/bin
           mingw32-make mingw
       - name: Copying
         run: |
