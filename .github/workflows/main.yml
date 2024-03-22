@@ -67,6 +67,7 @@ jobs:
           mingw32-make mingw
           cp non-layered-tidy-trees.h /ucrt64/include/
           cp libnonlayeredtidytrees.dll /ucrt64/lib/
+          cp /ucrt64/bin/lua54.dll /ucrt64/lib/
       - uses: actions/checkout@v4
       - name: non-layered-tidy-trees.lua
         run: |
