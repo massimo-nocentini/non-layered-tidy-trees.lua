@@ -78,7 +78,8 @@ jobs:
           mkdir artifacts 
           cd artifacts
           mkdir bin && cp /ucrt64/bin/lua*.exe bin/
-          cp -r /ucrt64/include/ ./
+          mkdir include
+          cp /ucrt64/include/{lauxlib.h,lua.h,lua.hpp,luaconf.h,lualib.h,non-layered-tidy-trees.h} include/
           mkdir lib
           cp /ucrt64/bin/lua54.dll /ucrt64/lib/liblua* /ucrt64/lib/libnonlayeredtidytrees.dll lib/
           mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.dll lib/lua/5.4/
