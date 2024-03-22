@@ -61,7 +61,6 @@ jobs:
             mingw-w64-ucrt-x86_64-wget
             mingw-w64-ucrt-x86_64-toolchain
       - name: non-layered-tidy-trees.c
-        shell: msys2 {0}
         run: |
           git clone https://github.com/massimo-nocentini/non-layered-tidy-trees.c.git
           cd non-layered-tidy-trees.c/src
@@ -70,7 +69,6 @@ jobs:
           cp libnonlayeredtidytrees.dll /ucrt64/lib/
       - uses: actions/checkout@v4
       - name: non-layered-tidy-trees.lua
-        shell: msys2 {0}
         run: |
           cd src
           mingw32-make mingw
@@ -79,8 +77,9 @@ jobs:
           mkdir artifacts 
           cd artifacts
           mkdir bin && cp /ucrt64/bin/lua*.exe bin/
-          mkdir include && cp /ucrt64/include/*.h /usr/local/include/*.h include/
-          mkdir lib && cp /ucrt64/bin/*.dll /usr/local/lib/liblua* /usr/local/lib/libnonlayeredtidytrees.so lib/
+          cp -r /ucrt64/include/ ./
+          cp -r /ucrt64/lib/ ./
+          mkdir lib && cp /ucrt64/bin/*.dll lib/
           mkdir -p lib/lua/5.4 && cp ../src/libluanonlayeredtidytrees.dll lib/lua/5.4/
           mkdir -p share/lua/5.4 && cp ../src/*.lua share/lua/5.4/
       - name: Upload artifacts
