@@ -67,6 +67,7 @@ jobs:
           cd non-layered-tidy-trees.c/src
           mingw32-make mingw
           mingw32-make mingw-install
+          cp non-layered-tidy-trees.h /ucrt64/include/
       - uses: actions/checkout@v4
       - name: non-layered-tidy-trees.lua
         shell: msys2 {0}
