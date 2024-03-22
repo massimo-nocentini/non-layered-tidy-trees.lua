@@ -66,9 +66,8 @@ jobs:
           git clone https://github.com/massimo-nocentini/non-layered-tidy-trees.c.git
           cd non-layered-tidy-trees.c/src
           mingw32-make mingw
-          mingw32-make mingw-install
           cp non-layered-tidy-trees.h /ucrt64/include/
-          cp *.dll /ucrt64/bin/
+          cp libnonlayeredtidytrees.dll /ucrt64/bin/
       - uses: actions/checkout@v4
       - name: non-layered-tidy-trees.lua
         shell: msys2 {0}
