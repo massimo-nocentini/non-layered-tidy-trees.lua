@@ -1,1 +1,43 @@
 
+name: Continuous integration
+on: [push]
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lua
+        run: |
+          wget https://www.lua.org/ftp/lua-5.4.6.tar.gz
+          tar xfz lua-5.4.6.tar.gz
+          cd lua-5.4.6
+          make "MYCFLAGS=-fPIC" linux
+          sudo make install
+      - name: C implementation
+        run: |
+          git clone https://github.com/massimo-nocentini/non-layered-tidy-trees.c.git
+          cd non-layered-tidy-trees.c/src
+          make
+          sudo make install
+      - uses: actions/checkout@v4
+      - name: Build
+        run: |
+          cd src
+          make
+          cd ..
+      - name: Copying
+        run: |
+          mkdir bin && cp /usr/local/bin/lua* bin/
+          mkdir include && cp /usr/local/include/lua* include/
+          mkdir lib && cp /usr/local/lib/liblua* /usr/local/lib/libnonlayeredtidytrees.so lib/
+          mkdir -p lib/lua/5.4 && cp src/libluanonlayeredtidytrees.so lib/lua/5.4/
+          mkdir -p share/lua/5.4 && cp src/*.lua share/lua/5.4/
+          zip -r ubuntu-latest.zip bin/ include/ lib/ share/
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-latest
+          path: ubuntu-latest.zip
+      # - name: Upload release assets
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   run: gh release create r${{github.run_number}} ubuntu-latest.zip
