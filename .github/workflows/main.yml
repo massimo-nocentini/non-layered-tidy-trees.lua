@@ -72,6 +72,8 @@ jobs:
         shell: msys2 {0}
         run: |
           cd src
+          ls /usr/local/include
+          ls /usr/local/lib
           mingw32-make mingw
       - name: Copying
         run: |
